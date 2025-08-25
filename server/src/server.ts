@@ -2,7 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import cookieParser from "cookie-parser";
-import signupRoute from "../routes/signup.route.ts";
+import signupRoute from "./routes/signup.route.ts";
 import type { CorsOptions } from "cors";
 import type { Response, Application } from "express";
 
