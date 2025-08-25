@@ -31,6 +31,8 @@ CipherChat is a **modern, secure, and real-time chat application** built for sea
 - [Socket.IO](https://socket.io/)
 - [JWT (JSON Web Tokens)](https://jwt.io/)
 - [bcrypt](https://github.com/kelektiv/node.bcrypt.js)
+- [MongoDB](https://mongodb.com)
+- [Mongoose](https://mongoose.com)
 
 ---
 
