@@ -30,7 +30,7 @@ debug.log
 .next.cache/
 
 # Production build
-frontend/out/
+client/out/
 
 # Vercel deployment folder
 .vercel/
@@ -40,8 +40,8 @@ frontend/out/
 # ---------------------------
 
 # Compiled backend code
-backend/dist/
-backend/build/
+server/dist/
+server/build/
 
 # ---------------------------
 # Environment Files
@@ -80,8 +80,8 @@ ehthumbs.db
 
 # Cache folders
 .cache/
-frontend/.cache/
-backend/.cache/
+client/.cache/
+server/.cache/
 
 # Coverage reports
 coverage/
