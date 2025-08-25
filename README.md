@@ -22,6 +22,7 @@ CipherChat is a **modern, secure, and real-time chat application** built for sea
 - [Next.js](https://nextjs.org/)
 - [shadcn/ui](https://ui.shadcn.com/)
 - [TailwindCSS](https://tailwindcss.com/)
+- [Zustand](https://github.com/pmndrs/zustand)
 
 ### **Backend:**
 
