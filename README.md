@@ -33,28 +33,6 @@ CipherChat is a **modern, secure, and real-time chat application** built for sea
 
 ---
 
-## 📂 Project Structure
-
-```
-Cipher-Chat/
-├── client/          # Next.js frontend
-│   ├── components/  # Reusable UI components
-│   ├── pages/       # Next.js pages
-│   ├── styles/      # TailwindCSS styling
-│   └── utils/       # Helper functions
-│
-├── server/          # Express backend
-│   ├── routes/      # API endpoints
-│   ├── controllers/ # Business logic
-│   ├── models/      # Database models
-│   ├── middlewares/ # Auth & security middlewares
-│   └── socket/      # Socket.IO events
-│
-└── README.md        # Project documentation
-```
-
----
-
 ## ⚡ Installation & Setup
 
 ### 1️⃣ Clone the repository
@@ -66,14 +44,14 @@ cd Cipher-Chat
 
 ### 2️⃣ Install dependencies
 
-#### Frontend:
+#### Frontend
 
 ```bash
 cd client
 npm install
 ```
 
-#### Backend:
+#### Backend
 
 ```bash
 cd ../server
@@ -90,14 +68,14 @@ JWT_SECRET=your_secret_key
 
 ### 4️⃣ Start the development servers
 
-#### Frontend:
+#### Frontend
 
 ```bash
 cd client
 npm run dev
 ```
 
-#### Backend:
+#### Backend
 
 ```bash
 cd ../server
