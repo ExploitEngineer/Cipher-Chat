@@ -5,11 +5,14 @@ import cookieParser from "cookie-parser";
 import signupRoute from "./routes/signup.route.ts";
 import session from "express-session";
 import passport from "passport";
+import { connectDB } from "./config/db-connection.ts";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import type { CorsOptions } from "cors";
 import type { Request, Response, Application, NextFunction } from "express";
 
 dotenv.config();
+
+connectDB();
 
 const corsOptions: CorsOptions = {
   origin: "http://localhost:3000",
