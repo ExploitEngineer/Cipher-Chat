@@ -8,10 +8,11 @@ import {
   authenticateGoogle,
   authenticateGoogleCallback,
 } from "../middleware/auth.middleware.ts";
+import { signUpValidator } from "../middleware/auth.validator.ts";
 
 const router: Router = express.Router();
 
-router.post("/signup", signupController);
+router.post("/signup", signUpValidator, signupController);
 router.get("/google", authenticateGoogle);
 router.get("/google/callback", authenticateGoogleCallback, oauthCallback);
 
