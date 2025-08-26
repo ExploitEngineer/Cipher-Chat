@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +23,9 @@ export function SigninPage() {
           {/* Google Sign-In */}
           <div className="mt-6">
             <Button
+              onClick={() => {
+                window.location.href = `${process.env.NEXT_PUBLIC_URL}/api/auth/google`;
+              }}
               type="button"
               variant="outline"
               className="flex w-full cursor-pointer items-center justify-center gap-2 border-zinc-700 bg-zinc-900 text-white shadow-lg hover:bg-zinc-800 hover:text-white"
