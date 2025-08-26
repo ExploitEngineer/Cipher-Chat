@@ -7,17 +7,23 @@ interface AuthUserData {
   lastName: string;
   email: String;
   password: String;
+  profilePic?: String;
+  _id?: String;
 }
 
 interface AuthStore {
-  authUser: null | AuthUserData;
+  readonly authUser: null | AuthUserData;
   isSigningUp: boolean;
+  isSigningIn: boolean;
+
   signup: (data: AuthUserData) => Promise<void>;
+  signin: (data: Pick<AuthUserData, "email" | "password">) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
   authUser: null,
   isSigningUp: false,
+  isSigningIn: false,
 
   signup: async (data: AuthUserData) => {
     set({ isSigningUp: true });
@@ -31,6 +37,21 @@ export const useAuthStore = create<AuthStore>((set) => ({
       }
     } finally {
       set({ isSigningUp: false });
+    }
+  },
+
+  signin: async (data: Pick<AuthUserData, "email" | "password">) => {
+    set({ isSigningIn: true });
+    try {
+      const res = await axiosInstance.post<AuthUserData>("/auth/signin", data);
+      set({ authUser: res.data });
+      toast.success("Logged in successfully");
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(err.message);
+      }
+    } finally {
+      set({ isSigningIn: false });
     }
   },
 }));
