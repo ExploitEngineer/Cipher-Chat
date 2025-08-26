@@ -45,3 +45,37 @@ export const signupController = async (req: Request, res: Response) => {
 export const oauthCallback = (_: any, res: Response) => {
   res.redirect("http://localhost:3000/");
 };
+
+export const signinController = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const {
+    body: { email, password },
+  } = req;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      res.status(400).json({ message: "Invalid Credentials" });
+    }
+
+    if (user) {
+      const isPasswordCorrect = await bcrypt.compare(password, user.password);
+      if (!isPasswordCorrect) {
+        return res.status(400).json({ message: "Invalid credentials" });
+      }
+
+      generateToken(user._id.toString(), res);
+      return res.status(200).send(user);
+    }
+  } catch (err) {
+    if (err instanceof Error) {
+      return res.json({ message: `Server Error ${err.message}` });
+    }
+  }
+};
