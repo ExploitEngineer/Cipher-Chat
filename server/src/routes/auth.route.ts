@@ -25,7 +25,7 @@ router.post("/signin", signInValidator, signinController);
 router.post(
   "/forgot-password",
   forgotPasswordValidator,
-  forgotPasswordController
+  forgotPasswordController,
 );
 
 export default router;

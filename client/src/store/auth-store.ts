@@ -15,15 +15,20 @@ interface AuthStore {
   readonly authUser: null | AuthUserData;
   isSigningUp: boolean;
   isSigningIn: boolean;
+  isSendingEmail: boolean;
+  isPasswordResetting: boolean;
 
   signup: (data: AuthUserData) => Promise<void>;
   signin: (data: Pick<AuthUserData, "email" | "password">) => Promise<void>;
+  sendEmail: (data: string) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
   authUser: null,
   isSigningUp: false,
   isSigningIn: false,
+  isSendingEmail: false,
+  isPasswordResetting: false,
 
   signup: async (data: AuthUserData) => {
     set({ isSigningUp: true });
@@ -52,6 +57,21 @@ export const useAuthStore = create<AuthStore>((set) => ({
       }
     } finally {
       set({ isSigningIn: false });
+    }
+  },
+
+  sendEmail: async (email: string) => {
+    set({ isSendingEmail: true });
+    try {
+      const res = await axiosInstance.post("/auth/forgot-password", { email });
+      console.log("Response", res);
+      toast.success("Email send successfully");
+    } catch (err) {
+      if (err instanceof Error) {
+        toast.error(`server error ${err.message}`);
+      }
+    } finally {
+      set({ isSendingEmail: false });
     }
   },
 }));

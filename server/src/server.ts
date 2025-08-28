@@ -2,7 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import cookieParser from "cookie-parser";
-import signupRoute from "./routes/auth.route.ts";
+import authRoutes from "./routes/auth.route.ts";
 import session from "express-session";
 import passport from "passport";
 import { connectDB } from "./config/db-connection.ts";
@@ -30,7 +30,7 @@ if (process.env.SESSION_SECRET) {
       secret: process.env.SESSION_SECRET,
       resave: false,
       saveUninitialized: true,
-    })
+    }),
   );
 }
 app.use(passport.initialize());
@@ -47,15 +47,15 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       },
       (accessToken, refreshToken, profile, done) => {
         return done(null, profile);
-      }
-    )
+      },
+    ),
   );
 }
 
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user!));
 
-app.use("/api/auth", signupRoute);
+app.use("/api/auth", authRoutes);
 
 app.get("/", (_, res: Response) => {
   res.status(200).json({ msg: "server is running" });

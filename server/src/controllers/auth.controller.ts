@@ -9,6 +9,7 @@ import { resetPasswordEmail } from "../lib/templates/reset-password.ts";
 
 export const signupController = async (req: Request, res: Response) => {
   const errors = validationResult(req);
+  console.log(errors);
 
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -51,6 +52,7 @@ export const oauthCallback = (_: any, res: Response) => {
 
 export const signinController = async (req: Request, res: Response) => {
   const errors = validationResult(req);
+  console.log(errors);
 
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -85,6 +87,7 @@ export const signinController = async (req: Request, res: Response) => {
 
 export const forgotPasswordController = async (req: Request, res: Response) => {
   const errors = validationResult(req);
+  console.log(errors);
 
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -122,7 +125,7 @@ export const forgotPasswordController = async (req: Request, res: Response) => {
     });
 
     await transporter.sendMail({
-      from: `"Your App" <${process.env.SMTP_USER}>`,
+      from: `"Cipher Chat" <${process.env.SMTP_USER}>`,
       to: user.email,
       subject: "Password Reset Request",
       html: resetPasswordEmail(resetUrl, user.firstName),
