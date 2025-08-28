@@ -139,3 +139,45 @@ export const forgotPasswordController = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const resetPasswordController = async (req: Request, res: Response) => {
+  console.log("BODY:", req.body.password, req.body.token);
+  const errors = validationResult(req);
+  console.log(errors);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const {
+    body: { password, token },
+  } = req;
+
+  try {
+    const user = await User.findOne({ resetPasswordToken: token });
+
+    if (!user || !user.resetPasswordExpires) {
+      return res.status(404).json({ message: "Invalid or expired token" });
+    }
+
+    const now = new Date();
+    if (user.resetPasswordExpires < now) {
+      return res.status(401).json({ message: "Token expired" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    user.password = hashedPassword;
+    user.resetPasswordExpires = undefined;
+    user.resetPasswordToken = undefined;
+
+    await user.save();
+
+    return res.status(200).json({ message: "Password reset successful" });
+  } catch (err) {
+    if (err instanceof Error) {
+      return res.status(500).json({ message: `Server error ${err.message}` });
+    }
+  }
+};

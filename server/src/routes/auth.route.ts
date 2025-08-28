@@ -5,6 +5,7 @@ import {
   oauthCallback,
   signinController,
   signupController,
+  resetPasswordController,
 } from "../controllers/auth.controller.ts";
 import {
   authenticateGoogle,
@@ -12,6 +13,7 @@ import {
 } from "../middleware/auth.middleware.ts";
 import {
   forgotPasswordValidator,
+  resetPasswordValidator,
   signInValidator,
   signUpValidator,
 } from "../middleware/auth.validator.ts";
@@ -27,5 +29,6 @@ router.post(
   forgotPasswordValidator,
   forgotPasswordController,
 );
+router.post("/reset-password", resetPasswordValidator, resetPasswordController);
 
 export default router;

@@ -30,3 +30,15 @@ export const forgotPasswordValidator = body("email")
   .trim()
   .isEmail()
   .withMessage("email is required");
+
+export const resetPasswordValidator = [
+  body("password")
+    .trim()
+    .notEmpty()
+    .withMessage("password cannot be empty")
+    .isLength({ min: 6, max: 46 })
+    .withMessage(
+      "password must be at least 6 characters with a max of 46 characters",
+    ),
+  body("token").trim().notEmpty().isString().withMessage("token is required"),
+];
