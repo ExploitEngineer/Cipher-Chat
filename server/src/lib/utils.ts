@@ -1,5 +1,6 @@
 import type { Response } from "express";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 export const generateToken = (userId: string, res: Response) => {
   const jwtSecret = process.env.JWT_SECRET;
@@ -15,5 +16,11 @@ export const generateToken = (userId: string, res: Response) => {
     sameSite: "strict", // CSRF attacks cross-site request forgery attack
   });
 
+  return token;
+};
+
+export const generateResetToken = () => {
+  // Generate a secure random token
+  const token = crypto.randomBytes(32).toString("hex");
   return token;
 };

@@ -25,3 +25,7 @@ export const signInValidator = [
       "password must be at least 6 characters with a max of 46 characters"
     ),
 ];
+
+export const forgotPasswordValidator = [
+  body("email").trim().isEmail().withMessage("email is required"),
+];

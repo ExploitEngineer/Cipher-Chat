@@ -2,7 +2,10 @@ import type { Request, Response } from "express";
 import User from "../models/user.model.ts";
 import { validationResult } from "express-validator";
 import bcrypt from "bcrypt";
+import nodemailer from "nodemailer";
 import { generateToken } from "../lib/utils.ts";
+import { generateResetToken } from "../lib/utils.ts";
+import { resetPasswordEmail } from "../lib/templates/reset-password.ts";
 
 export const signupController = async (req: Request, res: Response) => {
   const errors = validationResult(req);
@@ -76,6 +79,60 @@ export const signinController = async (req: Request, res: Response) => {
   } catch (err) {
     if (err instanceof Error) {
       return res.json({ message: `Server Error ${err.message}` });
+    }
+  }
+};
+
+export const forgotPasswordController = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const {
+    body: { email },
+  } = req;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Generate token & expiration
+    const resetToken = generateResetToken();
+    const expiration = new Date();
+    expiration.setHours(expiration.getHours() + 1); // token valid of 1 hour
+
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = expiration;
+    await user.save();
+
+    const resetUrl = `http://localhost:3000/reset-password?token=${resetToken}`;
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD,
+      },
+    });
+
+    await transporter.sendMail({
+      from: `"Your App" <${process.env.SMTP_USER}>`,
+      to: user.email,
+      subject: "Password Reset Request",
+      html: resetPasswordEmail(resetUrl, user.firstName),
+    });
+
+    res.status(200).json({ message: "Password reset email sent" });
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error(err.message);
+      return res.status(500).json({ message: "Server error" });
     }
   }
 };
