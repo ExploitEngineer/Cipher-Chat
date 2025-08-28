@@ -6,10 +6,13 @@ import { Label } from "@/components/ui/label";
 import { FormEvent, useState } from "react";
 import { useAuthStore } from "@/store/auth-store";
 import { Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import Link from "next/link";
 
 export function ForgotPasswordPage() {
+  const router = useRouter();
+
   const [email, setEmail] = useState<string>("");
 
   const { isSendingEmail, sendEmail } = useAuthStore();
@@ -20,12 +23,17 @@ export function ForgotPasswordPage() {
     return true;
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const success = validateForm();
+    const isValid = validateForm();
+    if (!isValid) return;
 
-    if (success) sendEmail(email);
+    const result = await sendEmail(email);
+
+    if (result.success) {
+      router.push("/");
+    }
   };
 
   return (

@@ -38,13 +38,19 @@ export function ResetPasswordPage() {
     return true;
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    const success = validateForm();
+    const isValid = validateForm();
+    if (!isValid) return;
 
-    if (success) {
-      await reset({ password: formData.password, token: token! });
+    const result = await reset({ password: formData.password, token: token! });
+
+    if (result.success) {
       router.push("/");
     }
   };
@@ -73,9 +79,8 @@ export function ResetPasswordPage() {
               </Label>
               <div className="flex items-center justify-between rounded-md border border-zinc-700 bg-zinc-900 px-3">
                 <Input
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
+                  onChange={handleChange}
+                  name="password"
                   type={showPassword ? "text" : "password"}
                   required
                   id="pwd"
@@ -106,11 +111,10 @@ export function ResetPasswordPage() {
                 Confirm Password
               </Label>
               <Input
-                onChange={(e) =>
-                  setFormData({ ...formData, confirmPassword: e.target.value })
-                }
+                onChange={handleChange}
                 type="password"
                 required
+                name="confirmPassword"
                 value={formData.confirmPassword}
                 id="confirm-password"
                 placeholder="Confirm new password"

@@ -33,13 +33,21 @@ export function SigninPage() {
 
     return true;
   };
-  const handleForm = (e: FormEvent) => {
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleForm = async (e: FormEvent) => {
     e.preventDefault();
 
-    const success = validateForm();
+    const isValid = validateForm();
+    if (!isValid) return;
 
-    if (success === true) signin(formData);
-    router.push("/");
+    const result = await signin(formData);
+    if (result.success) {
+      router.push("/");
+    }
   };
 
   return (
@@ -89,10 +97,9 @@ export function SigninPage() {
               <Input
                 type="email"
                 required
+                name="email"
                 value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
+                onChange={handleChange}
                 id="email"
                 placeholder="name@example.com"
                 className="border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500 focus-visible:!border-zinc-700 focus-visible:!ring-0 focus-visible:!ring-offset-0"
@@ -116,11 +123,10 @@ export function SigninPage() {
               <div className="flex items-center justify-between rounded-md border border-zinc-700 bg-zinc-900 px-3">
                 <Input
                   type={showPassword ? "text" : "password"}
+                  name="password"
                   required
                   value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
+                  onChange={handleChange}
                   id="pwd"
                   placeholder="Enter your password"
                   className="flex-1 border-none bg-transparent text-white placeholder:text-zinc-500 focus-visible:!border-none focus-visible:!ring-0 focus-visible:!ring-offset-0"

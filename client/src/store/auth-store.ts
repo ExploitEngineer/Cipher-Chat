@@ -19,6 +19,10 @@ interface ResetParameters {
   token: string;
 }
 
+interface AuthReturn {
+  success: boolean;
+}
+
 interface AuthStore {
   readonly authUser: null | AuthUserData;
   isSigningUp: boolean;
@@ -26,10 +30,12 @@ interface AuthStore {
   isSendingEmail: boolean;
   isPasswordResetting: boolean;
 
-  signup: (data: AuthUserData) => Promise<void>;
-  signin: (data: Pick<AuthUserData, "email" | "password">) => Promise<void>;
-  sendEmail: (email: string) => Promise<void>;
-  reset: (data: ResetParameters) => Promise<void>;
+  signup: (data: AuthUserData) => Promise<AuthReturn>;
+  signin: (
+    data: Pick<AuthUserData, "email" | "password">,
+  ) => Promise<AuthReturn>;
+  sendEmail: (email: string) => Promise<AuthReturn>;
+  reset: (data: ResetParameters) => Promise<AuthReturn>;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -41,15 +47,27 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   signup: async (data) => {
     set({ isSigningUp: true });
+
     try {
       const res = await axiosInstance.post<AuthUserData>("/auth/signup", data);
+
       set({ authUser: res.data });
       toast.success("Account created successfully");
+
+      return {
+        success: true,
+      };
     } catch (err) {
       set({ authUser: null });
-      toast.error("Error signing up");
+
       const error = err as AxiosError<{ message: string }>;
-      console.error(error.response?.data || err);
+      const errorMessage = error.response?.data?.message || "Error signing up";
+
+      toast.error(errorMessage);
+
+      return {
+        success: false,
+      };
     } finally {
       set({ isSigningUp: false });
     }
@@ -57,15 +75,28 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   signin: async (data) => {
     set({ isSigningIn: true });
+
     try {
       const res = await axiosInstance.post<AuthUserData>("/auth/signin", data);
+
       set({ authUser: res.data });
       toast.success("Logged in successfully");
+
+      return {
+        success: true,
+      };
     } catch (err) {
       set({ authUser: null });
-      toast.error("Invalid credentials");
+
       const error = err as AxiosError<{ message: string }>;
-      console.error(error.response?.data || err);
+      const errorMessage =
+        error.response?.data?.message || "Invalid credentials";
+
+      toast.error(errorMessage);
+
+      return {
+        success: false,
+      };
     } finally {
       set({ isSigningIn: false });
     }
@@ -73,14 +104,24 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   sendEmail: async (email) => {
     set({ isSendingEmail: true });
+
     try {
-      const res = await axiosInstance.post("/auth/forgot-password", { email });
-      console.log("Response", res);
+      await axiosInstance.post("/auth/forgot-password", { email });
       toast.success("Email sent successfully");
+
+      return {
+        success: true,
+      };
     } catch (err) {
-      toast.error("Error sending email");
       const error = err as AxiosError<{ message: string }>;
-      console.error(error.response?.data || err);
+      const errorMessage =
+        error.response?.data?.message || "Error sending Email";
+
+      toast.error(errorMessage);
+
+      return {
+        success: false,
+      };
     } finally {
       set({ isSendingEmail: false });
     }
@@ -88,13 +129,24 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
   reset: async (data) => {
     set({ isPasswordResetting: true });
+
     try {
       await axiosInstance.post("/auth/reset-password", data);
       toast.success("Password reset successfully");
+
+      return {
+        success: true,
+      };
     } catch (err) {
-      toast.error("Error resetting password");
       const error = err as AxiosError<{ message: string }>;
-      console.error(error.response?.data || err);
+      const errorMessage =
+        error.response?.data?.message || "Error resetting password";
+
+      toast.error(errorMessage);
+
+      return {
+        success: false,
+      };
     } finally {
       set({ isPasswordResetting: false });
     }

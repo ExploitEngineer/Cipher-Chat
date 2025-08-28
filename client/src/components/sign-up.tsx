@@ -45,12 +45,21 @@ export function SignupPage() {
     return true;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const success = validateForm();
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-    if (success === true) signup(formData);
-    router.push("/");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const isValid = validateForm();
+    if (!isValid) return;
+
+    const result = await signup(formData);
+
+    if (result.success) {
+      router.push("/");
+    }
   };
 
   return (
@@ -101,11 +110,10 @@ export function SignupPage() {
                 <Input
                   type="text"
                   required
+                  name="firstName"
                   id="firstname"
                   value={formData.firstName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, firstName: e.target.value })
-                  }
+                  onChange={handleChange}
                   placeholder="John"
                   className="border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500 focus-visible:!border-zinc-700 focus-visible:!ring-0 focus-visible:!ring-offset-0"
                 />
@@ -116,11 +124,11 @@ export function SignupPage() {
                 </Label>
                 <Input
                   type="text"
+                  id="lastname"
+                  name="lastName"
                   required
                   value={formData.lastName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, lastName: e.target.value })
-                  }
+                  onChange={handleChange}
                   placeholder="Doe"
                   className="border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500 focus-visible:!border-zinc-700 focus-visible:!ring-0 focus-visible:!ring-offset-0"
                 />
@@ -133,11 +141,10 @@ export function SignupPage() {
               </Label>
               <Input
                 type="email"
+                name="email"
                 required
                 value={formData.email}
-                onChange={(e) =>
-                  setFormData({ ...formData, email: e.target.value })
-                }
+                onChange={handleChange}
                 id="email"
                 placeholder="name@example.com"
                 className="border-zinc-700 bg-zinc-900 text-white placeholder:text-zinc-500 focus-visible:!border-zinc-700 focus-visible:!ring-0 focus-visible:!ring-offset-0"
@@ -152,10 +159,9 @@ export function SignupPage() {
                 <Input
                   type={showPassword ? "text" : "password"}
                   required
+                  name="password"
                   value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
+                  onChange={handleChange}
                   id="pwd"
                   placeholder="Enter your password"
                   className="flex-1 border-none bg-transparent text-white placeholder:text-zinc-500 focus-visible:!border-none focus-visible:!ring-0 focus-visible:!ring-offset-0"
