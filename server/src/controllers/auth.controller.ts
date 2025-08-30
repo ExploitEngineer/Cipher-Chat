@@ -3,6 +3,7 @@ import User from "../models/user.model.ts";
 import { validationResult } from "express-validator";
 import bcrypt from "bcrypt";
 import nodemailer from "nodemailer";
+import cloudinary from "../lib/cloudinary.ts";
 import { generateToken } from "../lib/utils.ts";
 import { generateResetToken } from "../lib/utils.ts";
 import { resetPasswordEmail } from "../lib/templates/reset-password.ts";
@@ -178,6 +179,45 @@ export const resetPasswordController = async (req: Request, res: Response) => {
   } catch (err) {
     if (err instanceof Error) {
       return res.status(500).json({ message: `Server error ${err.message}` });
+    }
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const {
+      body: { profilePic },
+    } = req;
+    const userId = (req as any).user._id;
+
+    if (!profilePic) {
+      return res.status(400).json({ message: "Profile pic is required" });
+    }
+
+    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        profilePic: uploadResponse.secure_url,
+      },
+      { new: true },
+    );
+
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    console.log("error in update profile:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const checkAuth = (req: Request, res: Response) => {
+  try {
+    const user = (req as any).user;
+    res.status(200).json(user);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.log("Error in checkAuth controller", err.message);
+      res.status(500).json({ message: "Internal Server Error" });
     }
   }
 };
