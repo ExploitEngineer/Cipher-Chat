@@ -22,7 +22,9 @@ export default function NoMessagesPage() {
         </div>
 
         {/* Heading */}
-        <h2 className="text-2xl font-bold text-white">Welcome to ChatApp 💬</h2>
+        <h2 className="text-2xl font-bold text-white">
+          Welcome to Cipher Chat 💬
+        </h2>
         <p className="mt-2 mb-6 text-sm leading-relaxed text-gray-400">
           Select a user from the sidebar to start chatting. Stay connected and
           enjoy a clean, modern messaging experience.
