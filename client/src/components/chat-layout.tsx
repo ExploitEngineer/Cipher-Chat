@@ -7,6 +7,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Line } from "./line";
+import { Image as ImageIcon } from "lucide-react";
 
 interface Users {
   id: string;
@@ -171,9 +172,21 @@ export default function ChatLayout() {
                 {/* Input Box */}
                 <form
                   onSubmit={handleSend}
-                  className="flex gap-3 border-t border-transparent bg-black/40 px-20 pt-4 pb-6 backdrop-blur-lg"
+                  className="flex items-center gap-3 border-t border-transparent bg-black/40 px-20 pt-4 pb-6 backdrop-blur-lg"
                 >
-                  {/* ShadCN Input */}
+                  <label
+                    htmlFor="image-upload"
+                    className="flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-gray-900/50 shadow-inner shadow-purple-700/30 transition-all duration-300 hover:bg-purple-800/30 hover:shadow-purple-600/50"
+                  >
+                    <ImageIcon className="h-6 w-6 text-purple-400" />
+                    <input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                    />
+                  </label>
+
                   <Input
                     type="text"
                     name="message"
@@ -181,7 +194,6 @@ export default function ChatLayout() {
                     className="h-14 flex-1 rounded-full border border-transparent bg-gray-900/50 px-6 text-white placeholder-gray-400 shadow-inner shadow-purple-700/30 transition-all duration-300 focus-visible:border-purple-500 focus-visible:ring-1 focus-visible:ring-purple-600"
                   />
 
-                  {/* ShadCN Button */}
                   <Button
                     type="submit"
                     className="h-14 cursor-pointer rounded-full bg-gradient-to-r from-purple-600 to-purple-800 px-8 py-3 text-white shadow-lg shadow-purple-700/50 transition-all duration-300 hover:scale-105 hover:shadow-purple-500/70"
