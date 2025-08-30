@@ -12,6 +12,7 @@ interface AuthUserData {
   profilePic?: string;
   resetPasswordExpires?: Date | undefined;
   resetPasswordToken?: string | undefined;
+  createdAt?: string;
 }
 
 interface ResetParameters {
@@ -24,18 +25,22 @@ interface AuthReturn {
 }
 
 interface AuthStore {
-  readonly authUser: null | AuthUserData;
+  authUser: AuthUserData | null;
   isSigningUp: boolean;
   isSigningIn: boolean;
   isSendingEmail: boolean;
   isPasswordResetting: boolean;
+  isUpdatingProfile: boolean;
+  isCheckingAuth: boolean;
 
+  checkAuth: () => Promise<void>;
   signup: (data: AuthUserData) => Promise<AuthReturn>;
   signin: (
     data: Pick<AuthUserData, "email" | "password">,
   ) => Promise<AuthReturn>;
   sendEmail: (email: string) => Promise<AuthReturn>;
   reset: (data: ResetParameters) => Promise<AuthReturn>;
+  updateProfile: (data: Partial<AuthUserData>) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -44,6 +49,20 @@ export const useAuthStore = create<AuthStore>((set) => ({
   isSigningIn: false,
   isSendingEmail: false,
   isPasswordResetting: false,
+  isUpdatingProfile: false,
+  isCheckingAuth: true,
+
+  checkAuth: async () => {
+    try {
+      const res = await axiosInstance.get<AuthUserData>("/auth/check");
+      set({ authUser: res.data });
+    } catch (err) {
+      console.error("Error in checkAuth:", err);
+      set({ authUser: null });
+    } finally {
+      set({ isCheckingAuth: false });
+    }
+  },
 
   signup: async (data) => {
     set({ isSigningUp: true });
@@ -149,6 +168,28 @@ export const useAuthStore = create<AuthStore>((set) => ({
       };
     } finally {
       set({ isPasswordResetting: false });
+    }
+  },
+
+  updateProfile: async (data) => {
+    set({ isUpdatingProfile: true });
+
+    try {
+      const res = await axiosInstance.put<AuthUserData>(
+        "/auth/update-profile",
+        data,
+      );
+      set({ authUser: res.data });
+
+      toast.success("Profile updated successfully");
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      const errorMessage =
+        error.response?.data?.message || "Error updating Profile";
+
+      toast.error(errorMessage);
+    } finally {
+      set({ isUpdatingProfile: false });
     }
   },
 }));
