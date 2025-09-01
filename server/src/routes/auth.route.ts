@@ -8,6 +8,7 @@ import {
   resetPasswordController,
   updateProfile,
   checkAuth,
+  logoutController,
 } from "../controllers/auth.controller.ts";
 import {
   authenticateGoogle,
@@ -30,10 +31,11 @@ router.post("/signin", signInValidator, signinController);
 router.post(
   "/forgot-password",
   forgotPasswordValidator,
-  forgotPasswordController,
+  forgotPasswordController
 );
 router.post("/reset-password", resetPasswordValidator, resetPasswordController);
 router.put("/update-profile", protectRoute, updateProfile);
 router.get("/check", protectRoute, checkAuth);
+router.get("/logout", protectRoute, logoutController);
 
 export default router;

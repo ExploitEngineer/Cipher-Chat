@@ -3,13 +3,15 @@ import dotenv from "dotenv";
 import express from "express";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.route.ts";
-import usersRoutes from "./routes/users.route.ts";
+import usersRoutes from "./routes/user.route.ts";
+import messageRoutes from "./routes/message.route.ts";
 import session from "express-session";
 import passport from "passport";
 import { connectDB } from "./config/db-connection.ts";
+import { app, server } from "./lib/socket.ts";
 import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import type { CorsOptions } from "cors";
-import type { Request, Response, Application, NextFunction } from "express";
+import type { Response } from "express";
 
 dotenv.config();
 
@@ -20,8 +22,6 @@ const corsOptions: CorsOptions = {
   credentials: true,
 };
 
-const app: Application = express();
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors(corsOptions));
@@ -31,7 +31,7 @@ if (process.env.SESSION_SECRET) {
       secret: process.env.SESSION_SECRET,
       resave: false,
       saveUninitialized: true,
-    }),
+    })
   );
 }
 app.use(passport.initialize());
@@ -47,8 +47,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       },
       (accessToken, refreshToken, profile, done) => {
         return done(null, profile);
-      },
-    ),
+      }
+    )
   );
 }
 
@@ -57,20 +57,14 @@ passport.deserializeUser((user, done) => done(null, user!));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", usersRoutes);
+app.use("/api/messages", messageRoutes);
 
 app.get("/", (_, res: Response) => {
-  res.status(200).json({ msg: "server is running" });
-});
-
-app.get("/auth/logout", (req: Request, res: Response, next: NextFunction) => {
-  (req as any).logout((err: any) => {
-    if (err) return next(err);
-    res.redirect("http://localhost:3000");
-  });
+  res.status(200).json({ message: "server is running" });
 });
 
 const PORT = process.env.PORT || 4001;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is listening on port ${PORT}`);
 });

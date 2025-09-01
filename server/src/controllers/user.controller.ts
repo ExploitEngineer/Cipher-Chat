@@ -1,12 +1,21 @@
 import User from "../models/user.model.ts";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 
-export const userController = async (_: any, res: Response): Promise<void> => {
+export const getUsersForSidebar = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const users = await User.find({}, "-password");
-    res.status(200).json(users);
+    const loggedInUserId = (req as any).user._id;
+    const filteredUsers = await User.find({
+      _id: { $ne: loggedInUserId },
+    }).select("-password");
+
+    res.status(200).json(filteredUsers);
   } catch (err) {
-    console.log("Error fetching users", err);
-    res.status(400).json({ message: `Internal Server Error` });
+    if (err instanceof Error) {
+      console.log("Error in getUsersForSidebar: ", err.message);
+      res.status(500).json({ error: "Internal server error" });
+    }
   }
 };

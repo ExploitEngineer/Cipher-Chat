@@ -1,6 +1,7 @@
 import passport from "passport";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.ts";
+import type { JwtPayload } from "jsonwebtoken";
 import type { Request, Response, NextFunction } from "express";
 
 export const authenticateGoogle = passport.authenticate("google", {
@@ -12,6 +13,10 @@ export const authenticateGoogleCallback = passport.authenticate("google", {
   failureRedirect: "/",
 });
 
+interface DecodedToken extends JwtPayload {
+  userId: string;
+}
+
 export const protectRoute = async (
   req: Request,
   res: Response,
@@ -22,7 +27,7 @@ export const protectRoute = async (
 
     if (!token) {
       return res
-        .status(400)
+        .status(401)
         .json({ message: "Unauthorized - No Token Provided" });
     }
 
@@ -32,9 +37,9 @@ export const protectRoute = async (
       throw new Error("JWT_SECRET is not defined in environment variables");
     }
 
-    const decoded = jwt.verify(token, jwtSecret);
+    const decoded = jwt.verify(token, jwtSecret) as DecodedToken;
 
-    if (typeof decoded === "string") {
+    if (!decoded.userId) {
       return res.status(401).json({ message: "Unauthorized - Invalid Token" });
     }
 
@@ -47,10 +52,17 @@ export const protectRoute = async (
     (req as any).user = user;
 
     next();
-  } catch (err) {
-    if (err instanceof Error) {
-      console.log("Error in protectRoute middleware:", err.message);
-      res.status(500).json({ message: "Internal server error" });
+  } catch (err: any) {
+    if (err.name === "TokenExpiredError") {
+      return res
+        .status(401)
+        .json({ message: "Token expired, please login again" });
     }
+    if (err.name === "JsonWebTokenError") {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+
+    console.log("Error in protectRoute middleware:", err.message);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };

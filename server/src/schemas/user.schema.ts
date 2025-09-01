@@ -32,8 +32,13 @@ export const userSchema = new Schema(
     },
     status: {
       type: String,
-      required: true,
+      enum: ["online", "offline"],
+      default: "offline",
+    },
+    lastSeen: {
+      type: Date,
+      default: Date.now(),
     },
   },
-  { timestamps: true },
+  { timestamps: true }
 );

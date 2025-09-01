@@ -1,4 +1,4 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import User from "../models/user.model.ts";
 import { validationResult } from "express-validator";
 import bcrypt from "bcrypt";
@@ -24,7 +24,7 @@ export const signupController = async (req: Request, res: Response) => {
     const checkUser = await User.findOne({ email });
 
     if (checkUser) {
-      res.status(400).json({ message: "Email already exists" });
+      return res.status(400).json({ message: "Email already exists" });
     }
 
     const salt = await bcrypt.genSalt(10);
@@ -38,11 +38,13 @@ export const signupController = async (req: Request, res: Response) => {
     });
 
     generateToken(user._id.toString(), res);
+
     await user.save();
     return res.status(201).send(user);
   } catch (err) {
     if (err instanceof Error) {
-      return res.json({ message: `Server Error ${err.message}` });
+      console.log("Error in signup controller:", err.message);
+      return res.status(500).json({ message: `Server Error ${err.message}` });
     }
   }
 };
@@ -67,7 +69,7 @@ export const signinController = async (req: Request, res: Response) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-      res.status(400).json({ message: "Invalid Credentials" });
+      return res.status(400).json({ message: "Invalid Credentials" });
     }
 
     if (user) {
@@ -200,7 +202,7 @@ export const updateProfile = async (req: Request, res: Response) => {
       {
         profilePic: uploadResponse.secure_url,
       },
-      { new: true },
+      { new: true }
     );
 
     res.status(200).json(updatedUser);
@@ -220,4 +222,15 @@ export const checkAuth = (req: Request, res: Response) => {
       res.status(500).json({ message: "Internal Server Error" });
     }
   }
+};
+
+export const logoutController = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  (req as any).logout((err: any) => {
+    if (err) return next(err);
+    res.redirect("http://localhost:3000");
+  });
 };
