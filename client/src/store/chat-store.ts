@@ -1,7 +1,13 @@
 import { create } from "zustand";
 import type { AuthUserData } from "@/types/user-types";
-import axios from "axios";
 import { axiosInstance } from "@/lib/axios";
+import toast from "react-hot-toast";
+import { useAuthStore } from "./auth-store";
+
+interface SendMessagePayload {
+  text: string;
+  image?: string | null;
+}
 
 export interface Message {
   _id: string;
@@ -10,26 +16,24 @@ export interface Message {
   text?: string;
   image?: string;
   createdAt: string;
-  updatedAt: string;
 }
 
 interface ChatStore {
-  selectedUser: string | null;
+  selectedUser: AuthUserData | null;
   messages: Message[];
   users: AuthUserData[];
   isLoading: boolean;
+  isSendingMessage: boolean;
   usersFetching: boolean;
   error: string | null;
 
   // Actions
   fetchUsers: () => Promise<void>;
-  setSelectedUser: (userId: string | undefined) => void;
-  fetchMessages: (receiverId: string) => Promise<void>;
-  sendMessage: (
-    receiverId: string,
-    text?: string,
-    image?: string,
-  ) => Promise<void>;
+  setSelectedUser: (userId: AuthUserData | null) => void;
+  getMessages: (userId: string) => Promise<void>;
+  sendMessage: (data: SendMessagePayload) => Promise<void>;
+  subscribeToMessages: () => void;
+  unsubscribeFromMessages: () => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -37,6 +41,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   messages: [],
   users: [],
   isLoading: false,
+  isSendingMessage: false,
   usersFetching: true,
   error: null,
 
@@ -44,41 +49,73 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({ usersFetching: true, error: null });
     try {
       const res = await axiosInstance.get<AuthUserData[]>("/users");
-      set({ users: res.data, usersFetching: false });
+      set({ users: res.data });
     } catch (err: any) {
       set({
         error: err.response?.data?.message || "Failed to fetch users",
-        usersFetching: false,
       });
+    } finally {
+      set({ usersFetching: false });
     }
   },
 
-  setSelectedUser: (userId) => set({ selectedUser: userId, messages: [] }),
+  setSelectedUser: (user) => set({ selectedUser: user }),
 
-  fetchMessages: async (receiverId) => {
+  getMessages: async (userId) => {
+    set({ isLoading: true, error: null });
     try {
-      set({ isLoading: true, error: null });
-      const res = await axios.get(`/api/messages/${receiverId}`);
-      set({ messages: res.data, isLoading: false });
+      const res = await axiosInstance.get<Message[]>(`/messages/${userId}`);
+      set({ messages: res.data });
     } catch (error: any) {
       set({
         error: error.response?.data?.message || "Failed to fetch messages",
-        isLoading: false,
       });
+    } finally {
+      set({ isLoading: false });
     }
   },
 
-  sendMessage: async (receiverId, text, image) => {
-    try {
-      const res = await axios.post(`/api/messages`, {
-        receiverId,
-        text,
-        image,
-      });
+  subscribeToMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;
 
-      set({ messages: [...get().messages, res.data] });
-    } catch (error: any) {
-      set({ error: error.response?.data?.message || "Failed to send message" });
+    socket.on("newMessage", (newMessage: Message) => {
+      set({ messages: [...get().messages, newMessage] });
+    });
+  },
+
+  // Unsubscribe from Socket.IO events to prevent memory leaks
+  unsubscribeFromMessages: () => {
+    const socket = useAuthStore.getState().socket;
+    socket?.off("newMessage");
+  },
+
+  sendMessage: async ({ text, image }: SendMessagePayload) => {
+    const { selectedUser, messages } = get();
+
+    if (!selectedUser) {
+      toast.error("Please select a user first");
+      return;
+    }
+
+    set({ isSendingMessage: true });
+
+    try {
+      const res = await axiosInstance.post<Message>(
+        `/messages/send/${selectedUser._id}`,
+        { text, image },
+      );
+
+      // Optimistically update local state
+      set({ messages: [...messages, res.data] });
+
+      // Emit real-time event via Socket.IO
+      const socket = useAuthStore.getState().socket;
+      socket?.emit("sendMessage", res.data);
+    } catch (err) {
+      if (err instanceof Error) toast.error(err.message);
+    } finally {
+      set({ isSendingMessage: false });
     }
   },
 }));

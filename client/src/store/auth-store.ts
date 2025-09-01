@@ -2,6 +2,7 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "@/lib/axios";
 import { AxiosError } from "axios";
+import { io, Socket } from "socket.io-client";
 import type { AuthUserData } from "../types/user-types.ts";
 
 interface ResetParameters {
@@ -21,6 +22,8 @@ interface AuthStore {
   isPasswordResetting: boolean;
   isUpdatingProfile: boolean;
   isCheckingAuth: boolean;
+  socket: Socket | null;
+  onlineUsers: string[];
 
   checkAuth: () => Promise<void>;
   signup: (data: AuthUserData) => Promise<AuthReturn>;
@@ -30,21 +33,27 @@ interface AuthStore {
   sendEmail: (email: string) => Promise<AuthReturn>;
   reset: (data: ResetParameters) => Promise<AuthReturn>;
   updateProfile: (data: Partial<AuthUserData>) => Promise<void>;
+  connectSocket: () => void;
+  disconnectSocket: () => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthStore>((set, get) => ({
   authUser: null,
+  socket: null,
   isSigningUp: false,
   isSigningIn: false,
   isSendingEmail: false,
   isPasswordResetting: false,
   isUpdatingProfile: false,
   isCheckingAuth: true,
+  onlineUsers: [],
 
   checkAuth: async () => {
+    set({ isCheckingAuth: true });
     try {
       const res = await axiosInstance.get<AuthUserData>("/auth/check");
       set({ authUser: res.data });
+      get().connectSocket();
     } catch (err) {
       console.error("Error in checkAuth:", err);
       set({ authUser: null });
@@ -61,6 +70,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
       set({ authUser: res.data });
       toast.success("Account created successfully");
+      get().connectSocket();
 
       return {
         success: true,
@@ -89,6 +99,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
       set({ authUser: res.data });
       toast.success("Logged in successfully");
+      get().connectSocket();
 
       return {
         success: true,
@@ -179,6 +190,32 @@ export const useAuthStore = create<AuthStore>((set) => ({
       toast.error(errorMessage);
     } finally {
       set({ isUpdatingProfile: false });
+    }
+  },
+
+  connectSocket: () => {
+    const { authUser, socket } = get();
+    if (!authUser || socket?.connected) return;
+
+    const newSocket = io("http://localhost:4000", {
+      query: {
+        userId: authUser._id,
+      },
+    });
+
+    newSocket.connect();
+    set({ socket: newSocket });
+
+    newSocket.on("getOnLineUsers", (userIds: string[]) => {
+      set({ onlineUsers: userIds });
+    });
+  },
+
+  disconnectSocket: () => {
+    const { socket } = get();
+    if (socket?.connected) {
+      socket.disconnect();
+      set({ socket: null });
     }
   },
 }));
