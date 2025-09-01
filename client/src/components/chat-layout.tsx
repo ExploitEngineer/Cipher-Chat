@@ -9,43 +9,21 @@ import { Input } from "@/components/ui/input";
 import { Line } from "./line";
 import { Image as ImageIcon } from "lucide-react";
 
-interface Users {
-  id: string;
-  name: string;
-  avatar: string;
-  status: string;
-}
-
-const users: Users[] = [
-  {
-    id: "1",
-    name: "John Doe",
-    avatar: "/assets/images/avatar.webp",
-    status: "online",
-  },
-  {
-    id: "2",
-    name: "Alice Smith",
-    avatar: "/assets/images/avatar.webp",
-    status: "offline",
-  },
-  {
-    id: "3",
-    name: "David Johnson",
-    avatar: "/assets/images/avatar.webp",
-    status: "online",
-  },
-];
-
 export default function ChatLayout() {
   const {
     selectedUser,
     setSelectedUser,
     messages,
     fetchMessages,
+    fetchUsers,
+    users,
     sendMessage,
     isLoading,
   } = useChatStore();
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   useEffect(() => {
     if (selectedUser) {
@@ -91,10 +69,10 @@ export default function ChatLayout() {
             <div className="space-y-3">
               {users.map((user) => (
                 <div
-                  key={user.id}
-                  onClick={() => setSelectedUser(user.id)}
+                  key={user._id}
+                  onClick={() => setSelectedUser(user._id)}
                   className={`group flex cursor-pointer items-center gap-4 rounded-2xl px-3 py-3 transition-all duration-300 hover:scale-[1.02] ${
-                    selectedUser === user.id
+                    selectedUser === user._id
                       ? "bg-gradient-to-r from-purple-700/50 to-purple-900/30 shadow-lg shadow-purple-600/40"
                       : "bg-black/20 hover:bg-purple-800/30"
                   }`}
@@ -102,11 +80,11 @@ export default function ChatLayout() {
                   {/* User Avatar */}
                   <div className="relative">
                     <Image
-                      src={user.avatar}
+                      src={user.profilePic || "/assets/images/avatar.webp"}
                       width={50}
                       height={50}
                       className="rounded-full border border-transparent shadow-md transition-all duration-300 group-hover:shadow-purple-500/50"
-                      alt={user.name}
+                      alt={user.firstName}
                     />
                     {/* Status Badge */}
                     <span
@@ -120,7 +98,9 @@ export default function ChatLayout() {
 
                   {/* User Info */}
                   <div className="flex flex-col">
-                    <span className="font-medium text-white">{user.name}</span>
+                    <span className="font-medium text-white">
+                      {user.firstName} {user.lastName}
+                    </span>
                     <span
                       className={`text-xs ${
                         user.status === "online"

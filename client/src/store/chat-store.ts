@@ -1,5 +1,7 @@
 import { create } from "zustand";
+import type { AuthUserData } from "@/types/user-types";
 import axios from "axios";
+import { axiosInstance } from "@/lib/axios";
 
 export interface Message {
   _id: string;
@@ -14,11 +16,14 @@ export interface Message {
 interface ChatStore {
   selectedUser: string | null;
   messages: Message[];
+  users: AuthUserData[];
   isLoading: boolean;
+  usersFetching: boolean;
   error: string | null;
 
   // Actions
-  setSelectedUser: (userId: string | null) => void;
+  fetchUsers: () => Promise<void>;
+  setSelectedUser: (userId: string | undefined) => void;
   fetchMessages: (receiverId: string) => Promise<void>;
   sendMessage: (
     receiverId: string,
@@ -30,8 +35,23 @@ interface ChatStore {
 export const useChatStore = create<ChatStore>((set, get) => ({
   selectedUser: null,
   messages: [],
+  users: [],
   isLoading: false,
+  usersFetching: true,
   error: null,
+
+  fetchUsers: async () => {
+    set({ usersFetching: true, error: null });
+    try {
+      const res = await axiosInstance.get<AuthUserData[]>("/users");
+      set({ users: res.data, usersFetching: false });
+    } catch (err: any) {
+      set({
+        error: err.response?.data?.message || "Failed to fetch users",
+        usersFetching: false,
+      });
+    }
+  },
 
   setSelectedUser: (userId) => set({ selectedUser: userId, messages: [] }),
 
