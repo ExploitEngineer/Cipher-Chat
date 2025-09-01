@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.route.ts";
+import usersRoutes from "./routes/users.route.ts";
 import session from "express-session";
 import passport from "passport";
 import { connectDB } from "./config/db-connection.ts";
@@ -35,7 +36,6 @@ if (process.env.SESSION_SECRET) {
 }
 app.use(passport.initialize());
 app.use(passport.session());
-
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   passport.use(
     new GoogleStrategy(
@@ -56,6 +56,7 @@ passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user!));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/users", usersRoutes);
 
 app.get("/", (_, res: Response) => {
   res.status(200).json({ msg: "server is running" });

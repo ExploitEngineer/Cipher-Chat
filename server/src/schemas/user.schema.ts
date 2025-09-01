@@ -28,8 +28,12 @@ export const userSchema = new Schema(
     },
     profilePic: {
       type: String,
-      default: "",
+      default: null,
+    },
+    status: {
+      type: String,
+      required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
