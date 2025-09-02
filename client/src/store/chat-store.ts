@@ -106,10 +106,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         { text, image },
       );
 
-      // Optimistically update local state
       set({ messages: [...messages, res.data] });
 
-      // Emit real-time event via Socket.IO
       const socket = useAuthStore.getState().socket;
       socket?.emit("sendMessage", res.data);
     } catch (err) {

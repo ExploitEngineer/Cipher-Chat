@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useRef, ChangeEvent, FormEvent } from "react";
 import { useChatStore } from "@/store/chat-store";
+import { useAuthStore } from "@/store/auth-store";
 import NoMessagesPage from "./no-messages-page";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Line } from "./line";
-import { Image as ImageIcon, X } from "lucide-react";
+import { Image as ImageIcon } from "lucide-react";
 import { formatMessageTime } from "@/lib/format-time";
 
 export default function ChatLayout() {
@@ -17,17 +18,26 @@ export default function ChatLayout() {
     setSelectedUser,
     messages,
     getMessages,
+    sendMessage,
     usersFetching,
     fetchUsers,
     users,
-    sendMessage,
     isLoading,
   } = useChatStore();
+
+  const { authUser, onlineUsers } = useAuthStore();
 
   const [text, setText] = useState<string>("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    useChatStore.getState().subscribeToMessages();
+    return () => {
+      useChatStore.getState().unsubscribeFromMessages();
+    };
+  }, []);
 
   // Handle image preview
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -44,12 +54,6 @@ export default function ChatLayout() {
       setImagePreview(reader.result as string);
     };
     reader.readAsDataURL(file);
-  };
-
-  // Remove selected image
-  const removeImage = () => {
-    setImagePreview(null);
-    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   // Handle message sending
@@ -90,25 +94,6 @@ export default function ChatLayout() {
 
   return (
     <section className="min-h-screen w-full">
-      {imagePreview && (
-        <div className="mb-3 flex items-center gap-2">
-          <div className="relative">
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="h-20 w-20 rounded-lg border border-zinc-700 object-cover"
-            />
-            <button
-              onClick={removeImage}
-              className="bg-base-300 absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full"
-              type="button"
-            >
-              <X className="size-3" />
-            </button>
-          </div>
-        </div>
-      )}
-
       <div className="relative min-h-screen w-full bg-black">
         <div
           className="absolute inset-0 z-0"
@@ -162,7 +147,7 @@ export default function ChatLayout() {
                       {/* Status Badge */}
                       <span
                         className={`absolute right-1 bottom-1 block h-3 w-3 rounded-full border border-black ${
-                          user.status === "online"
+                          onlineUsers.includes(user?._id)
                             ? "bg-green-500"
                             : "bg-gray-500"
                         }`}
@@ -176,12 +161,12 @@ export default function ChatLayout() {
                       </span>
                       <span
                         className={`text-xs ${
-                          user.status === "online"
+                          onlineUsers.includes(user._id)
                             ? "text-green-400"
                             : "text-gray-400"
                         }`}
                       >
-                        {user.status === "online" ? "Online" : "Offline"}
+                        {onlineUsers.includes(user._id) ? "Online" : "Offline"}
                       </span>
                     </div>
                   </div>
@@ -195,30 +180,40 @@ export default function ChatLayout() {
             {selectedUser ? (
               <div className="flex h-full flex-col bg-black/20 backdrop-blur-md">
                 {/* Messages */}
-                <div className="flex-1 space-y-4 overflow-y-auto p-6">
+                <div className="flex flex-1 flex-col space-y-3 overflow-y-auto p-6">
                   {isLoading ? (
                     <p className="text-gray-400">Loading messages...</p>
                   ) : messages.length > 0 ? (
                     messages.map((msg) => (
                       <div
                         key={msg._id}
-                        className={`max-w-xs rounded-2xl px-4 py-2 text-sm shadow-lg transition-all duration-300 ${
-                          msg.senderId === selectedUser._id
-                            ? "self-start bg-gray-800 text-gray-200 shadow-black/40"
-                            : "self-end bg-gradient-to-r from-purple-600 to-purple-800 text-white shadow-purple-600/50"
+                        className={`flex w-full ${
+                          msg.senderId === authUser?._id
+                            ? "justify-end"
+                            : "justify-start"
                         }`}
                       >
-                        {msg.text && <p>{msg.text}</p>}
-                        {msg.image && (
-                          <img
-                            src={msg.image}
-                            alt="attachment"
-                            className="mt-2 max-h-48 rounded-xl border border-purple-700/40 shadow-md"
-                          />
-                        )}
-                        <p className="mt-1 text-right text-xs text-gray-400">
-                          {formatMessageTime(msg.createdAt)}
-                        </p>
+                        <div
+                          className={`max-w-[60%] min-w-[130px] rounded-2xl px-4 py-2 text-sm break-words shadow-lg transition-all duration-300 ${
+                            msg.senderId === authUser?._id
+                              ? "bg-gradient-to-r from-purple-600 to-purple-800 text-white shadow-purple-600/50"
+                              : "bg-gray-800 text-gray-200 shadow-black/40"
+                          }`}
+                        >
+                          <p>{msg?.text}</p>
+
+                          {msg.image && (
+                            <img
+                              src={msg.image}
+                              alt="attachment"
+                              className="mt-2 max-w-full rounded-xl border border-purple-700/40 shadow-md"
+                            />
+                          )}
+
+                          <p className="mt-1 text-right text-xs text-gray-400">
+                            {formatMessageTime(msg.createdAt)}
+                          </p>
+                        </div>
                       </div>
                     ))
                   ) : (
@@ -251,7 +246,7 @@ export default function ChatLayout() {
                     type="text"
                     name="message"
                     value={text}
-                    onChange={(e) => setText(e.target.value)} // ✅ FIXED controlled input
+                    onChange={(e) => setText(e.target.value)}
                     placeholder="Type a message..."
                     className="h-14 flex-1 rounded-full border border-transparent bg-gray-900/50 px-6 text-white placeholder-gray-400 shadow-inner shadow-purple-700/30 transition-all duration-300 focus-visible:border-purple-500 focus-visible:ring-1 focus-visible:ring-purple-600"
                   />

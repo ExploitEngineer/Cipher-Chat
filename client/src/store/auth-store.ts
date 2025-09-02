@@ -198,7 +198,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     newSocket.connect();
     set({ socket: newSocket });
 
-    newSocket.on("getOnLineUsers", (userIds: string[]) => {
+    newSocket.on("getOnlineUsers", (userIds: string[]) => {
       set({ onlineUsers: userIds });
     });
   },
