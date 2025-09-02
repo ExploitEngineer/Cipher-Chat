@@ -30,7 +30,7 @@ interface AuthStore {
   signin: (
     data: Pick<AuthUserData, "email" | "password">,
   ) => Promise<AuthReturn>;
-  sendEmail: (email: string) => Promise<AuthReturn>;
+  sendEmail: (email: string) => Promise<void>;
   reset: (data: ResetParameters) => Promise<AuthReturn>;
   updateProfile: (data: Partial<AuthUserData>) => Promise<void>;
   connectSocket: () => void;
@@ -127,20 +127,12 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     try {
       await axiosInstance.post("/auth/forgot-password", { email });
       toast.success("Email sent successfully");
-
-      return {
-        success: true,
-      };
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
       const errorMessage =
         error.response?.data?.message || "Error sending Email";
 
       toast.error(errorMessage);
-
-      return {
-        success: false,
-      };
     } finally {
       set({ isSendingEmail: false });
     }
