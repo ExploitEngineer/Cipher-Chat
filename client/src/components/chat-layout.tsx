@@ -29,7 +29,7 @@ export default function ChatLayout() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
 
-  // ✅ Handle image preview
+  // Handle image preview
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -46,13 +46,13 @@ export default function ChatLayout() {
     reader.readAsDataURL(file);
   };
 
-  // ✅ Remove selected image
+  // Remove selected image
   const removeImage = () => {
     setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // ✅ Handle message sending
+  // Handle message sending
   const handleSendMessage = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!text.trim() && !imagePreview) return;
@@ -71,17 +71,17 @@ export default function ChatLayout() {
     }
   };
 
-  // ✅ Fetch users initially
+  // Fetch users initially
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
 
-  // ✅ Fetch messages whenever selected user changes
+  // Fetch messages whenever selected user changes
   useEffect(() => {
     if (selectedUser?._id) getMessages(selectedUser._id);
   }, [selectedUser?._id, getMessages]);
 
-  // ✅ Auto-scroll on new messages
+  // Auto-scroll on new messages
   useEffect(() => {
     if (messageEndRef.current) {
       messageEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -143,7 +143,7 @@ export default function ChatLayout() {
                 users.map((user) => (
                   <div
                     key={user._id}
-                    onClick={() => setSelectedUser(user)} // ✅ FIXED — pass full user object
+                    onClick={() => setSelectedUser(user)}
                     className={`group flex cursor-pointer items-center gap-4 rounded-2xl px-3 py-3 transition-all duration-300 hover:scale-[1.02] ${
                       selectedUser?._id === user._id
                         ? "bg-gradient-to-r from-purple-700/50 to-purple-900/30 shadow-lg shadow-purple-600/40"
@@ -216,7 +216,6 @@ export default function ChatLayout() {
                             className="mt-2 max-h-48 rounded-xl border border-purple-700/40 shadow-md"
                           />
                         )}
-                        {/* ✅ Show message time */}
                         <p className="mt-1 text-right text-xs text-gray-400">
                           {formatMessageTime(msg.createdAt)}
                         </p>
