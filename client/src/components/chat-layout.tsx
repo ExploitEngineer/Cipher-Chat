@@ -10,9 +10,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Line } from "./line";
 import Link from "next/link";
-import { Image as ImageIcon, Settings } from "lucide-react";
+import {
+  Image as ImageIcon,
+  Settings,
+  Check,
+  CheckCheck,
+  ChevronDown,
+  Trash,
+  Pencil,
+} from "lucide-react";
 import { formatMessageTime } from "@/lib/format-time";
 import { formatLastSeen } from "@/lib/format-last-seen";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function ChatLayout() {
   const {
@@ -25,11 +41,14 @@ export default function ChatLayout() {
     fetchUsers,
     users,
     isLoading,
+    editMessage,
   } = useChatStore();
 
   const { authUser, onlineUsers } = useAuthStore();
 
   const [text, setText] = useState<string>("");
+  const [isEditing, setIsEditing] = useState<string | null>(null);
+  const [editText, setEditText] = useState<string>("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
@@ -196,7 +215,7 @@ export default function ChatLayout() {
               <div className="flex h-full flex-col bg-black/20 backdrop-blur-md">
                 {/* Chat Header */}
                 <Link href="/user-profile">
-                  <div className="flex items-center gap-4 border-b border-gray-800 bg-black/40 p-4">
+                  <div className="flex items-center gap-4 p-4 shadow-lg shadow-purple-700/40">
                     <Image
                       src={
                         selectedUser.profilePic || "/assets/images/avatar.webp"
@@ -235,13 +254,115 @@ export default function ChatLayout() {
                         }`}
                       >
                         <div
-                          className={`max-w-[60%] min-w-[130px] rounded-2xl px-4 py-2 text-sm break-words shadow-lg transition-all duration-300 ${
+                          className={`group relative max-w-[60%] min-w-[130px] space-y-3 rounded-2xl px-4 py-2 text-sm break-words shadow-lg transition-all duration-300 ${
                             msg.senderId === authUser?._id
                               ? "bg-gradient-to-r from-purple-600 to-purple-800 text-white shadow-purple-600/50"
                               : "bg-gray-800 text-gray-200 shadow-black/40"
                           }`}
                         >
-                          <p>{msg?.text}</p>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              {isEditing ? null : (
+                                <button
+                                  className={`pointer-events-none absolute top-2 right-2 cursor-pointer rounded-full p-1 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100`}
+                                  type="button"
+                                >
+                                  <ChevronDown
+                                    size={16}
+                                    className="text-gray-400 transition hover:text-white"
+                                  />
+                                </button>
+                              )}
+                            </DropdownMenuTrigger>
+
+                            <DropdownMenuContent
+                              className="w-40 rounded-md border border-gray-700 bg-gray-900 text-white shadow-lg"
+                              side="right"
+                              align="start"
+                              sideOffset={6}
+                            >
+                              <DropdownMenuGroup>
+                                <DropdownMenuItem
+                                  className="cursor-pointer transition hover:bg-purple-600/30"
+                                  onClick={() => {
+                                    setIsEditing(msg._id);
+                                    setEditText(msg.text || "");
+                                  }}
+                                >
+                                  Edit
+                                  <DropdownMenuShortcut>
+                                    <Pencil />
+                                  </DropdownMenuShortcut>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem className="cursor-pointer transition hover:bg-purple-600/30">
+                                  Delete
+                                  <DropdownMenuShortcut>
+                                    <Trash />
+                                  </DropdownMenuShortcut>
+                                </DropdownMenuItem>
+                              </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+
+                          {isEditing === msg._id ? (
+                            <form
+                              onSubmit={async (e) => {
+                                e.preventDefault();
+                                if (editText.trim() === msg.text) {
+                                  setIsEditing(null);
+                                  return;
+                                }
+                                await editMessage(msg._id, editText);
+                                setIsEditing(null);
+                                setEditText("");
+                              }}
+                              className="flex flex-col gap-2"
+                            >
+                              <input
+                                value={editText}
+                                onChange={(e) => setEditText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Escape") {
+                                    setIsEditing(null);
+                                    setEditText("");
+                                  }
+                                }}
+                                autoFocus
+                                className="flex-1 rounded-lg bg-gray-700 px-3 py-2 text-white placeholder-gray-400 shadow-md transition-all duration-300 outline-none focus:ring-2 focus:ring-purple-500"
+                                placeholder="Edit your message..."
+                              />
+
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  type="submit"
+                                  size="sm"
+                                  className="cursor-pointer rounded-lg bg-blue-600/80 px-3 py-1 text-white shadow-md transition-all duration-300 hover:scale-105 hover:bg-purple-800"
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  className="cursor-pointer rounded-lg bg-gray-600 px-3 py-1 text-white shadow-md transition-all duration-300 hover:scale-105 hover:bg-gray-700"
+                                  onClick={() => {
+                                    setIsEditing(null);
+                                    setEditText("");
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </form>
+                          ) : (
+                            <div className="me-5 flex items-center gap-2">
+                              <p className="break-words">{msg?.text}</p>
+                              {msg?.isEdited && (
+                                <span className="text-xs text-gray-400 italic">
+                                  (edited)
+                                </span>
+                              )}
+                            </div>
+                          )}
 
                           {msg.image && (
                             <img
@@ -250,9 +371,19 @@ export default function ChatLayout() {
                               className="mt-2 max-w-full rounded-xl border border-purple-700/40 shadow-md"
                             />
                           )}
-
-                          <p className="mt-1 text-right text-xs text-gray-400">
-                            {formatMessageTime(msg.createdAt)}
+                          <p className="mt-1 text-right text-[11px] font-medium text-gray-400">
+                            <span className="flex items-center justify-end">
+                              {formatMessageTime(msg.createdAt)}
+                              {msg.senderId === authUser?._id && (
+                                <span className="ml-1 flex items-center">
+                                  {onlineUsers.includes(selectedUser?._id) ? (
+                                    <CheckCheck color="white" size={15} />
+                                  ) : (
+                                    <Check color="white" size={15} />
+                                  )}
+                                </span>
+                              )}
+                            </span>
                           </p>
                         </div>
                       </div>

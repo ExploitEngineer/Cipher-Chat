@@ -15,6 +15,7 @@ export interface Message {
   receiverId: string;
   text?: string;
   image?: string;
+  isEdited?: boolean;
   createdAt: string;
 }
 
@@ -32,6 +33,7 @@ interface ChatStore {
   setSelectedUser: (userId: AuthUserData | null) => void;
   getMessages: (userId: string) => Promise<void>;
   sendMessage: (data: SendMessagePayload) => Promise<void>;
+  editMessage: (messageId: string, newText: string) => Promise<void>;
   subscribeToMessages: () => void;
   unsubscribeFromMessages: () => void;
 }
@@ -59,6 +61,16 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
+  editMessage: async (messageId, newText) => {
+    try {
+      await axiosInstance.patch<Message>(`/messages/${messageId}`, {
+        text: newText,
+      });
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || "Faild to edit message");
+    }
+  },
+
   setSelectedUser: (user) => set({ selectedUser: user }),
 
   getMessages: async (userId) => {
@@ -78,6 +90,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   subscribeToMessages: () => {
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
+
+    socket.on("messageEdited", (updateMessage: Message) => {
+      set((state) => ({
+        messages: state.messages.map((msg) =>
+          msg._id === updateMessage._id ? updateMessage : msg,
+        ),
+      }));
+    });
 
     socket.on("newMessage", (newMessage: Message) => {
       set({ messages: [...get().messages, newMessage] });
