@@ -1,5 +1,3 @@
-type UserStatus = "offline" | "online";
-
 export interface AuthUserData {
   _id: string;
   firstName: string;
@@ -7,8 +5,8 @@ export interface AuthUserData {
   email: string;
   password: string;
   profilePic?: string | null;
-  status?: UserStatus;
   resetPasswordExpires?: Date | undefined;
   resetPasswordToken?: string | undefined;
+  lastSeen: Date;
   createdAt?: string;
 }

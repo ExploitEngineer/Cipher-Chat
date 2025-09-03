@@ -9,8 +9,10 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Line } from "./line";
-import { Image as ImageIcon } from "lucide-react";
+import Link from "next/link";
+import { Image as ImageIcon, Settings } from "lucide-react";
 import { formatMessageTime } from "@/lib/format-time";
+import { formatLastSeen } from "@/lib/format-last-seen";
 
 export default function ChatLayout() {
   const {
@@ -111,12 +113,19 @@ export default function ChatLayout() {
         <div className="flex h-screen w-full text-white backdrop-blur-lg">
           {/* Sidebar */}
           <div className="w-76 border-r border-transparent bg-black/40 p-5 shadow-2xl shadow-purple-700/50 backdrop-blur-lg">
-            {/* Sidebar Heading */}
-            <div className="mb-6">
-              <h2 className="mb-2 text-2xl font-bold tracking-wide text-purple-400">
-                Chats
-              </h2>
-              <Line />
+            {/* Sidebar Header */}
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h2 className="mb-2 text-2xl font-bold tracking-wide text-purple-400">
+                  Chats
+                </h2>
+                <Line />
+              </div>
+              <Link href="/profile">
+                <button className="me-4 cursor-pointer rounded-full p-2 transition-all duration-300 hover:scale-110 hover:bg-purple-700/30">
+                  <Settings className="h-5 w-5 text-purple-400 hover:text-purple-300" />
+                </button>
+              </Link>
             </div>
 
             <div className="space-y-3">
@@ -166,7 +175,13 @@ export default function ChatLayout() {
                             : "text-gray-400"
                         }`}
                       >
-                        {onlineUsers.includes(user._id) ? "Online" : "Offline"}
+                        {onlineUsers.includes(user._id) ? (
+                          <span className="text-xs text-green-400">Online</span>
+                        ) : (
+                          <span className="text-xs text-gray-400">
+                            Last seen: {formatLastSeen(user.lastSeen)}
+                          </span>
+                        )}
                       </span>
                     </div>
                   </div>
@@ -179,6 +194,32 @@ export default function ChatLayout() {
           <div className="flex flex-1 flex-col">
             {selectedUser ? (
               <div className="flex h-full flex-col bg-black/20 backdrop-blur-md">
+                {/* Chat Header */}
+                <Link href="/user-profile">
+                  <div className="flex items-center gap-4 border-b border-gray-800 bg-black/40 p-4">
+                    <Image
+                      src={
+                        selectedUser.profilePic || "/assets/images/avatar.webp"
+                      }
+                      width={45}
+                      height={45}
+                      className="rounded-full border border-transparent shadow-md"
+                      alt={selectedUser.firstName}
+                    />
+                    <div>
+                      <h2 className="text-lg font-semibold text-white">
+                        {selectedUser.firstName} {selectedUser.lastName}
+                      </h2>
+                      {onlineUsers.includes(selectedUser._id) ? (
+                        <p className="text-sm text-green-400">Online</p>
+                      ) : (
+                        <p className="text-sm text-gray-400">
+                          Last seen: {formatLastSeen(selectedUser.lastSeen)}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Link>
                 {/* Messages */}
                 <div className="flex flex-1 flex-col space-y-3 overflow-y-auto p-6">
                   {isLoading ? (
