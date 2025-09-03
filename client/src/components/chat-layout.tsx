@@ -240,7 +240,7 @@ export default function ChatLayout() {
                   </div>
                 </Link>
                 {/* Messages */}
-                <div className="flex flex-1 flex-col space-y-3 overflow-y-auto p-6">
+                <div className="custom-scrollbar flex flex-1 flex-col space-y-3 overflow-y-auto p-6">
                   {isLoading ? (
                     <p className="text-gray-400">Loading messages...</p>
                   ) : messages.length > 0 ? (
