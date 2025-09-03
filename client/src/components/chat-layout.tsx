@@ -308,7 +308,10 @@ export default function ChatLayout() {
                             <form
                               onSubmit={async (e) => {
                                 e.preventDefault();
-                                if (editText.trim() === msg.text) {
+                                if (
+                                  editText.trim() === msg.text ||
+                                  editText.trim() === ""
+                                ) {
                                   setIsEditing(null);
                                   return;
                                 }
@@ -318,17 +321,21 @@ export default function ChatLayout() {
                               }}
                               className="flex flex-col gap-2"
                             >
-                              <input
+                              <textarea
                                 value={editText}
                                 onChange={(e) => setEditText(e.target.value)}
                                 onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    e.currentTarget.form?.requestSubmit();
+                                  }
                                   if (e.key === "Escape") {
                                     setIsEditing(null);
                                     setEditText("");
                                   }
                                 }}
                                 autoFocus
-                                className="flex-1 rounded-lg bg-gray-700 px-3 py-2 text-white placeholder-gray-400 shadow-md transition-all duration-300 outline-none focus:ring-2 focus:ring-purple-500"
+                                className="flex-1 overflow-y-hidden rounded-lg bg-gray-700 px-3 py-2 text-white placeholder-gray-400 shadow-md transition-all duration-300 outline-none focus:ring-2 focus:ring-purple-500"
                                 placeholder="Edit your message..."
                               />
 
