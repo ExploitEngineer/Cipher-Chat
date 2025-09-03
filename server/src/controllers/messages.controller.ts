@@ -65,3 +65,29 @@ export const sendMessage = async (req: Request, res: Response) => {
     }
   }
 };
+
+export const editMessagesController = async (req: Request, res: Response) => {
+  const {
+    params: { id },
+    body: { text },
+  } = req;
+
+  try {
+    const updatedMessage = await Message.findByIdAndUpdate(
+      id,
+      { text, isEdited: true },
+      { new: true },
+    );
+
+    if (!updatedMessage) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    io.emit("messageEdited", updatedMessage);
+
+    res.status(200).json(updatedMessage);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to edit message" });
+  }
+};

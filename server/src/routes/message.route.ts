@@ -4,11 +4,13 @@ import { protectRoute } from "../middleware/auth.middleware.ts";
 import {
   getMessages,
   sendMessage,
+  editMessagesController,
 } from "../controllers/messages.controller.ts";
 
 const router: Router = express.Router();
 
 router.get("/:id", protectRoute, getMessages);
+router.patch("/:id", protectRoute, editMessagesController);
 router.post("/send/:id", protectRoute, sendMessage);
 
 export default router;
