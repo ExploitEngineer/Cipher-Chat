@@ -91,3 +91,24 @@ export const editMessagesController = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to edit message" });
   }
 };
+
+export const deleteMessageController = async (req: Request, res: Response) => {
+  const {
+    params: { id: messageId },
+  } = req;
+
+  try {
+    const deletedMessage = await Message.findByIdAndDelete({ _id: messageId });
+
+    if (!deletedMessage) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+
+    io.emit("messageDeleted", deletedMessage);
+
+    res.status(200).json({ message: "message deleted" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Faild to delete message" });
+  }
+};

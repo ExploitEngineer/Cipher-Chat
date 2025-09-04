@@ -20,6 +20,7 @@ import {
   Pencil,
   X,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { formatMessageTime } from "@/lib/format-time";
 import { formatLastSeen } from "@/lib/format-last-seen";
@@ -54,6 +55,8 @@ export default function ChatLayout() {
     users,
     isLoading,
     editMessage,
+    isDeletingMessage,
+    deleteMessageFunc,
   } = useChatStore();
 
   const { authUser, onlineUsers } = useAuthStore();
@@ -62,6 +65,7 @@ export default function ChatLayout() {
   const [isEditing, setIsEditing] = useState<string | null>(null);
   const [editText, setEditText] = useState<string>("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [deleteMessage, setDeleteMessage] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const messageEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -106,6 +110,12 @@ export default function ChatLayout() {
     } catch (error) {
       console.error("Failed to send message:", error);
     }
+  };
+
+  const handleMessageDelete = (messageId: string) => {
+    deleteMessage === "DELETE"
+      ? deleteMessageFunc(messageId)
+      : toast.error("are you stupid ?");
   };
 
   // Fetch users initially
@@ -364,6 +374,10 @@ export default function ChatLayout() {
                                         </label>
                                         <Input
                                           id="confirm"
+                                          onChange={(e) =>
+                                            setDeleteMessage(e.target.value)
+                                          }
+                                          value={deleteMessage}
                                           placeholder="Type DELETE here"
                                           className="rounded-lg border border-purple-700/50 bg-gray-800/80 text-white placeholder-gray-500 shadow-inner shadow-purple-700/30 focus-visible:border-purple-500 focus-visible:ring-1 focus-visible:ring-purple-500"
                                         />
@@ -382,9 +396,23 @@ export default function ChatLayout() {
 
                                         <Button
                                           type="button"
+                                          disabled={isDeletingMessage}
+                                          onClick={() =>
+                                            handleMessageDelete(msg._id)
+                                          }
                                           className="cursor-pointer rounded-lg bg-gradient-to-r from-red-600 to-red-700 px-5 py-2 text-white shadow-md shadow-red-800/50 transition-all duration-300 hover:scale-105 hover:shadow-red-600/70"
                                         >
-                                          Delete
+                                          {isDeletingMessage ? (
+                                            <>
+                                              <Loader2
+                                                color="white"
+                                                className="size-5 animate-spin"
+                                              />
+                                              Loading...
+                                            </>
+                                          ) : (
+                                            "DELETE"
+                                          )}
                                         </Button>
                                       </DialogFooter>
                                     </DialogContent>

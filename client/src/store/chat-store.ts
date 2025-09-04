@@ -25,6 +25,7 @@ interface ChatStore {
   users: AuthUserData[];
   isLoading: boolean;
   isSendingMessage: boolean;
+  isDeletingMessage: boolean;
   usersFetching: boolean;
   error: string | null;
 
@@ -34,6 +35,7 @@ interface ChatStore {
   getMessages: (userId: string) => Promise<void>;
   sendMessage: (data: SendMessagePayload) => Promise<void>;
   editMessage: (messageId: string, newText: string) => Promise<void>;
+  deleteMessageFunc: (messageId: string) => Promise<void>;
   subscribeToMessages: () => void;
   unsubscribeFromMessages: () => void;
 }
@@ -44,6 +46,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   users: [],
   isLoading: false,
   isSendingMessage: false,
+  isDeletingMessage: false,
   usersFetching: true,
   error: null,
 
@@ -71,6 +74,20 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
 
+  deleteMessageFunc: async (messageId) => {
+    set({ isDeletingMessage: true, error: null });
+    try {
+      await axiosInstance.delete(`/messages/${messageId}`);
+    } catch (err: any) {
+      toast.error("Failed to delete message");
+      set({
+        error: err.response?.data?.message || "Failed to fetch users",
+      });
+    } finally {
+      set({ isDeletingMessage: false });
+    }
+  },
+
   setSelectedUser: (user) => set({ selectedUser: user }),
 
   getMessages: async (userId) => {
@@ -91,6 +108,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
 
+    socket.on("newMessage", (newMessage: Message) => {
+      set({ messages: [...get().messages, newMessage] });
+    });
+
     socket.on("messageEdited", (updateMessage: Message) => {
       set((state) => ({
         messages: state.messages.map((msg) =>
@@ -99,8 +120,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }));
     });
 
-    socket.on("newMessage", (newMessage: Message) => {
-      set({ messages: [...get().messages, newMessage] });
+    socket.on("messageDeleted", (deletedMessage: Message) => {
+      set((state) => ({
+        messages: state.messages.filter(
+          (msg) => msg._id !== deletedMessage._id,
+        ),
+      }));
     });
   },
 
