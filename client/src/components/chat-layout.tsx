@@ -272,125 +272,127 @@ export default function ChatLayout() {
                               : "bg-gray-800 text-gray-200 shadow-black/40"
                           }`}
                         >
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              {isEditing ? null : (
-                                <button
-                                  className={`pointer-events-none absolute top-2 right-2 cursor-pointer rounded-full p-1 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100`}
-                                  type="button"
-                                >
-                                  <ChevronDown
-                                    size={16}
-                                    className="text-gray-400 transition hover:text-white"
-                                  />
-                                </button>
-                              )}
-                            </DropdownMenuTrigger>
-
-                            <DropdownMenuContent
-                              className="w-40 rounded-md border border-gray-700 bg-gray-900 text-white shadow-lg"
-                              side="right"
-                              align="start"
-                              sideOffset={6}
-                            >
-                              <DropdownMenuGroup>
-                                <DropdownMenuItem
-                                  className="cursor-pointer transition hover:bg-purple-600/30"
-                                  onClick={() => {
-                                    setIsEditing(msg._id);
-                                    setEditText(msg.text || "");
-                                  }}
-                                >
-                                  Edit
-                                  <DropdownMenuShortcut>
-                                    <Pencil />
-                                  </DropdownMenuShortcut>
-                                </DropdownMenuItem>
-
-                                <Dialog>
-                                  <DialogTrigger asChild>
-                                    <DropdownMenuItem
-                                      onSelect={(e) => {
-                                        e.preventDefault();
-                                      }}
-                                      className="cursor-pointer transition hover:bg-purple-600/30"
-                                    >
-                                      Delete
-                                      <DropdownMenuShortcut>
-                                        <Trash className="h-4 w-4" />
-                                      </DropdownMenuShortcut>
-                                    </DropdownMenuItem>
-                                  </DialogTrigger>
-
-                                  <DialogContent
-                                    showCloseButton={false}
-                                    className="w-full rounded-2xl border border-purple-700/40 bg-gradient-to-b from-purple-950 via-gray-950 to-purple-950 shadow-2xl shadow-purple-800/80 backdrop-blur-xl sm:max-w-md"
+                          {msg.senderId === authUser?._id ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                {isEditing ? null : (
+                                  <button
+                                    className={`pointer-events-none absolute top-2 right-2 cursor-pointer rounded-full p-1 opacity-0 transition-opacity duration-150 group-hover:pointer-events-auto group-hover:opacity-100`}
+                                    type="button"
                                   >
-                                    <DialogClose asChild>
-                                      <button className="absolute top-4 right-4 cursor-pointer rounded-full p-1 text-white transition-colors hover:text-white">
-                                        <X className="h-5 w-5" />
-                                      </button>
-                                    </DialogClose>
+                                    <ChevronDown
+                                      size={16}
+                                      className="text-gray-400 transition hover:text-white"
+                                    />
+                                  </button>
+                                )}
+                              </DropdownMenuTrigger>
 
-                                    <DialogHeader className="flex gap-3">
-                                      <div className="flex h-10 w-10 items-center justify-center self-center rounded-full border border-red-500/30 bg-red-600/20 shadow-md">
-                                        <AlertTriangle className="h-5 w-5 text-red-400" />
-                                      </div>
-                                      <div>
-                                        <DialogTitle className="text-xl font-bold text-white">
-                                          Delete Message
-                                        </DialogTitle>
-                                        <DialogDescription className="text-sm text-gray-400">
-                                          Are you sure you want to delete this
-                                          message?
-                                          <span className="mt-1 block font-semibold text-red-400">
-                                            This action cannot be undone.
-                                          </span>
-                                        </DialogDescription>
-                                      </div>
-                                    </DialogHeader>
+                              <DropdownMenuContent
+                                className="w-40 rounded-md border border-gray-700 bg-gray-900 text-white shadow-lg"
+                                side="right"
+                                align="start"
+                                sideOffset={6}
+                              >
+                                <DropdownMenuGroup>
+                                  <DropdownMenuItem
+                                    className="cursor-pointer transition hover:bg-purple-600/30"
+                                    onClick={() => {
+                                      setIsEditing(msg._id);
+                                      setEditText(msg.text || "");
+                                    }}
+                                  >
+                                    Edit
+                                    <DropdownMenuShortcut>
+                                      <Pencil />
+                                    </DropdownMenuShortcut>
+                                  </DropdownMenuItem>
 
-                                    <div className="mt-5 flex flex-col gap-2">
-                                      <label
-                                        htmlFor="confirm"
-                                        className="text-sm text-gray-400"
-                                      >
-                                        Type{" "}
-                                        <span className="font-semibold text-red-400">
-                                          DELETE
-                                        </span>{" "}
-                                        to confirm:
-                                      </label>
-                                      <Input
-                                        id="confirm"
-                                        placeholder="Type DELETE here"
-                                        className="rounded-lg border border-purple-700/50 bg-gray-800/80 text-white placeholder-gray-500 shadow-inner shadow-purple-700/30 focus-visible:border-purple-500 focus-visible:ring-1 focus-visible:ring-purple-500"
-                                      />
-                                    </div>
-
-                                    <DialogFooter className="mt-6 flex justify-end gap-3">
-                                      <DialogClose asChild>
-                                        <Button
-                                          type="button"
-                                          variant="secondary"
-                                          className="cursor-pointer rounded-lg bg-gray-700 px-5 py-2 text-white shadow-md transition-all duration-300 hover:bg-gray-600 hover:shadow-gray-500/30"
-                                        >
-                                          Cancel
-                                        </Button>
-                                      </DialogClose>
-
-                                      <Button
-                                        type="button"
-                                        className="cursor-pointer rounded-lg bg-gradient-to-r from-red-600 to-red-700 px-5 py-2 text-white shadow-md shadow-red-800/50 transition-all duration-300 hover:scale-105 hover:shadow-red-600/70"
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <DropdownMenuItem
+                                        onSelect={(e) => {
+                                          e.preventDefault();
+                                        }}
+                                        className="cursor-pointer transition hover:bg-purple-600/30"
                                       >
                                         Delete
-                                      </Button>
-                                    </DialogFooter>
-                                  </DialogContent>
-                                </Dialog>
-                              </DropdownMenuGroup>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                                        <DropdownMenuShortcut>
+                                          <Trash className="h-4 w-4" />
+                                        </DropdownMenuShortcut>
+                                      </DropdownMenuItem>
+                                    </DialogTrigger>
+
+                                    <DialogContent
+                                      showCloseButton={false}
+                                      className="w-full rounded-2xl border border-purple-700/40 bg-gradient-to-b from-purple-950 via-gray-950 to-purple-950 shadow-2xl shadow-purple-800/80 backdrop-blur-xl sm:max-w-md"
+                                    >
+                                      <DialogClose asChild>
+                                        <button className="absolute top-4 right-4 cursor-pointer rounded-full p-1 text-white transition-colors hover:text-white">
+                                          <X className="h-5 w-5" />
+                                        </button>
+                                      </DialogClose>
+
+                                      <DialogHeader className="flex gap-3">
+                                        <div className="flex h-10 w-10 items-center justify-center self-center rounded-full border border-red-500/30 bg-red-600/20 shadow-md">
+                                          <AlertTriangle className="h-5 w-5 text-red-400" />
+                                        </div>
+                                        <div>
+                                          <DialogTitle className="text-xl font-bold text-white">
+                                            Delete Message
+                                          </DialogTitle>
+                                          <DialogDescription className="text-sm text-gray-400">
+                                            Are you sure you want to delete this
+                                            message?
+                                            <span className="mt-1 block font-semibold text-red-400">
+                                              This action cannot be undone.
+                                            </span>
+                                          </DialogDescription>
+                                        </div>
+                                      </DialogHeader>
+
+                                      <div className="mt-5 flex flex-col gap-2">
+                                        <label
+                                          htmlFor="confirm"
+                                          className="text-sm text-gray-400"
+                                        >
+                                          Type{" "}
+                                          <span className="font-semibold text-red-400">
+                                            DELETE
+                                          </span>{" "}
+                                          to confirm:
+                                        </label>
+                                        <Input
+                                          id="confirm"
+                                          placeholder="Type DELETE here"
+                                          className="rounded-lg border border-purple-700/50 bg-gray-800/80 text-white placeholder-gray-500 shadow-inner shadow-purple-700/30 focus-visible:border-purple-500 focus-visible:ring-1 focus-visible:ring-purple-500"
+                                        />
+                                      </div>
+
+                                      <DialogFooter className="mt-6 flex justify-end gap-3">
+                                        <DialogClose asChild>
+                                          <Button
+                                            type="button"
+                                            variant="secondary"
+                                            className="cursor-pointer rounded-lg bg-gray-700 px-5 py-2 text-white shadow-md transition-all duration-300 hover:bg-gray-600 hover:shadow-gray-500/30"
+                                          >
+                                            Cancel
+                                          </Button>
+                                        </DialogClose>
+
+                                        <Button
+                                          type="button"
+                                          className="cursor-pointer rounded-lg bg-gradient-to-r from-red-600 to-red-700 px-5 py-2 text-white shadow-md shadow-red-800/50 transition-all duration-300 hover:scale-105 hover:shadow-red-600/70"
+                                        >
+                                          Delete
+                                        </Button>
+                                      </DialogFooter>
+                                    </DialogContent>
+                                  </Dialog>
+                                </DropdownMenuGroup>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : null}
 
                           {isEditing === msg._id ? (
                             <form
