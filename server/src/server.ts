@@ -22,16 +22,17 @@ const corsOptions: CorsOptions = {
   credentials: true,
 };
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 app.use(cors(corsOptions));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 if (process.env.SESSION_SECRET) {
   app.use(
     session({
       secret: process.env.SESSION_SECRET,
       resave: false,
       saveUninitialized: true,
-    })
+    }),
   );
 }
 app.use(passport.initialize());
@@ -47,8 +48,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
       },
       (accessToken, refreshToken, profile, done) => {
         return done(null, profile);
-      }
-    )
+      },
+    ),
   );
 }
 
