@@ -103,7 +103,6 @@ export default function ChatLayout() {
         text: text.trim(),
         image: imagePreview,
       });
-
       setText("");
       setImagePreview(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -488,9 +487,8 @@ export default function ChatLayout() {
                               )}
                             </div>
                           )}
-
                           {msg.image && (
-                            <img
+                            <Image
                               src={msg.image}
                               alt="attachment"
                               className="mt-2 max-w-full rounded-xl border border-purple-700/40 shadow-md"
@@ -547,6 +545,15 @@ export default function ChatLayout() {
                     placeholder="Type a message..."
                     className="h-14 flex-1 rounded-full border border-transparent bg-gray-900/50 px-6 text-white placeholder-gray-400 shadow-inner shadow-purple-700/30 transition-all duration-300 focus-visible:border-purple-500 focus-visible:ring-1 focus-visible:ring-purple-600"
                   />
+
+                  {imagePreview && (
+                    <Image
+                      src={imagePreview}
+                      width={100}
+                      height={100}
+                      alt="user uploaded image"
+                    />
+                  )}
 
                   <Button
                     type="submit"
