@@ -3,7 +3,7 @@ import { MessageCircle } from "lucide-react";
 
 export default function NoMessagesPage() {
   return (
-    <div className="flex flex-1 items-center justify-center text-gray-400">
+    <div className="flex h-full w-full items-center justify-center text-gray-400">
       <div className="flex max-w-md flex-col items-center text-center">
         <div className="mb-6">
           <MessageCircle size={140} strokeWidth={1.5} color="#8011d1" />

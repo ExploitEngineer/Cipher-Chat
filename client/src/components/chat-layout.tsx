@@ -212,14 +212,15 @@ export default function ChatLayout() {
                     }`}
                   >
                     {/* User Avatar */}
-                    <div className="relative">
+                    <div className="relative h-12 w-12 overflow-hidden rounded-full">
                       <Image
                         src={user.profilePic || "/assets/images/avatar.webp"}
-                        width={50}
-                        height={50}
-                        className="rounded-full border border-transparent shadow-md transition-all duration-300 group-hover:shadow-purple-500/50"
+                        fill
+                        className="object-cover shadow-md transition-all duration-300 group-hover:shadow-purple-500/50"
                         alt={user.firstName}
+                        sizes="40px"
                       />
+
                       {/* Status Badge */}
                       <span
                         className={`absolute right-1 bottom-1 block h-3 w-3 rounded-full border border-black ${
@@ -263,16 +264,19 @@ export default function ChatLayout() {
               <div className="flex h-full flex-col bg-black/20 backdrop-blur-md">
                 {/* Chat Header */}
                 <Link href="/user-profile">
-                  <div className="flex items-center gap-4 p-4 shadow-lg shadow-purple-700/40">
-                    <Image
-                      src={
-                        selectedUser.profilePic || "/assets/images/avatar.webp"
-                      }
-                      width={45}
-                      height={45}
-                      className="rounded-full border border-transparent shadow-md"
-                      alt={selectedUser.firstName}
-                    />
+                  <div className="flex items-center gap-4 rounded-lg p-4 shadow-lg shadow-purple-700/40 transition-all duration-300 hover:shadow-purple-500/50">
+                    <div className="relative h-[45px] w-[45px] overflow-hidden rounded-full">
+                      <Image
+                        src={
+                          selectedUser.profilePic ||
+                          "/assets/images/avatar.webp"
+                        }
+                        fill
+                        className="object-cover"
+                        alt={selectedUser.firstName}
+                        sizes="45px"
+                      />
+                    </div>
                     <div>
                       <h2 className="text-lg font-semibold text-white">
                         {selectedUser.firstName} {selectedUser.lastName}
