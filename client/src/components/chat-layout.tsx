@@ -50,6 +50,7 @@ export default function ChatLayout() {
     messages,
     getMessages,
     sendMessage,
+    isSendingMessage,
     usersFetching,
     fetchUsers,
     users,
@@ -561,7 +562,17 @@ export default function ChatLayout() {
                     type="submit"
                     className="h-14 cursor-pointer rounded-full bg-gradient-to-r from-purple-600 to-purple-800 px-8 py-3 text-white shadow-lg shadow-purple-700/50 transition-all duration-300 hover:scale-105 hover:shadow-purple-500/70"
                   >
-                    Send
+                    {isSendingMessage ? (
+                      <>
+                        <Loader2
+                          color="white"
+                          className="size-5 animate-spin"
+                        />
+                        Loading...
+                      </>
+                    ) : (
+                      "Send"
+                    )}
                   </Button>
                 </form>
               </div>
