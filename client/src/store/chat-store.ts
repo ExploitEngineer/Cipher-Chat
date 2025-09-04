@@ -110,6 +110,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     socket.on("newMessage", (newMessage: Message) => {
       set({ messages: [...get().messages, newMessage] });
+
+      if (newMessage.senderId !== useAuthStore.getState().authUser?._id) {
+        const sound = new Audio("/assets/sounds/notification.mp3");
+        sound.play().catch((err) => console.log("Audio play failed:", err));
+      }
     });
 
     socket.on("messageEdited", (updateMessage: Message) => {
@@ -126,6 +131,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           (msg) => msg._id !== deletedMessage._id,
         ),
       }));
+
+      const sound = new Audio("/assets/sounds/delete.wav");
+      sound.play().catch((err) => console.log("Audio play failed:", err));
     });
   },
 

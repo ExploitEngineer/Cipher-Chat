@@ -77,6 +77,30 @@ export default function ChatLayout() {
     };
   }, []);
 
+  useEffect(() => {
+    const unlockSound = async () => {
+      try {
+        const receivedMessage = new Audio("/assets/sounds/notification.mp3");
+        const deleteMessage = new Audio("/assets/sounds/delete.wav");
+
+        await receivedMessage.play();
+        receivedMessage.pause();
+        receivedMessage.currentTime = 0;
+
+        await deleteMessage.play();
+        deleteMessage.pause();
+        deleteMessage.currentTime = 0;
+      } catch (error) {
+        console.warn("Audio unlock failed:", error);
+      } finally {
+        window.removeEventListener("click", unlockSound);
+      }
+    };
+
+    window.addEventListener("click", unlockSound);
+    return () => window.removeEventListener("click", unlockSound);
+  }, []);
+
   // Handle image preview
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -116,6 +140,8 @@ export default function ChatLayout() {
     deleteMessage === "DELETE"
       ? deleteMessageFunc(messageId)
       : toast.error("are you stupid ?");
+
+    setDeleteMessage("");
   };
 
   // Fetch users initially
