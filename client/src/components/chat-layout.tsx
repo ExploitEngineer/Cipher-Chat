@@ -490,8 +490,10 @@ export default function ChatLayout() {
                           {msg.image && (
                             <Image
                               src={msg.image}
+                              width={200}
+                              height={200}
                               alt="attachment"
-                              className="mt-2 max-w-full rounded-xl border border-purple-700/40 shadow-md"
+                              className="mt-2 rounded-xl border border-purple-700/40 shadow-md"
                             />
                           )}
                           <p className="mt-1 text-right text-[11px] font-medium text-gray-400">
